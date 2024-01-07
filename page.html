@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #f0f0f0, #ffffff);
+            text-align: center;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s;
+        }
+
+        h1 {
+            color: #ff6600;
+            font-size: 32px;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ff6600;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            width: 300px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #cc5500;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .status-box {
+            border: 1px solid #ffcc00;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255, 255, 0, 0.2);
+        }
+
+        .status-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .status-orange .status-value {
+            background-color: orange;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .status-green .status-value {
+            background-color: green;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .status-blue .status-value {
+            background-color: blue;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        #adminButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 8px; /* Уменьшили отступы */
+            font-size: 12px; /* Уменьшили размер шрифта */
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        #adminButton:hover {
+            background-color: #cc5500;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Отслеживание посылки</h1>
+    <p>Введите трек-код и нажмите "Поиск":</p>
+    <input type="text" id="trackCode">
+    <br><br>
+    <button onclick="searchPackage()">Поиск</button>
+    <div id="result"></div>
+
+    <button onclick="showAdminMenu()" id="adminButton">Я админ</button>
+
+    <script>
+        function showAdminMenu() {
+            var password = prompt("Введите секретный пароль:");
+            if (password === "070709") {
+                var valuesToAdd = prompt("Введите значения для добавления в таблицу (разделите их пробелами):");
+                if (valuesToAdd) {
+                    var valuesArray = valuesToAdd.split(" ").map(function (value) {
+                        return [value.trim()];
+                    });
+                    google.script.run.addNewValues(valuesArray);
+                }
+            } else {
+                alert("Неверный пароль. Попробуйте еще раз.");
+            }
+        }
+
+        function searchPackage() {
+            var code = document.getElementById('trackCode').value;
+            google.script.run.withSuccessHandler(function (result) {
+                var resultDiv = document.getElementById('result');
+                if (result.message) {
+                    resultDiv.innerHTML = '<div class="status-box">' + result.message + '</div>';
+                } else {
+                    var statusesHtml = result.statuses.map(function (status) {
+                        return '<div class="status-box status-' + status.color + '"><span class="status-label">' + status.name + ':</span> <span class="status-value">' + status.value + '</span></div>';
+                    }).join('');
+                    resultDiv.innerHTML = statusesHtml;
+                }
+            }).searchPackage(code);
+        }
+    </script>
+</body>
+</html>
